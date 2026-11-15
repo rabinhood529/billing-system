@@ -1,0 +1,211 @@
+{% extends "core/base.html" %}
+
+{% block title %}
+Add Product | Billing System
+{% endblock %}
+
+{% block content %}
+
+<div class="mb-4">
+    <h3>
+    {% if product %}
+        Edit Product
+    {% else %}
+        Add New Product
+    {% endif %}
+    </h3>
+    <p class="text-muted">Enter the product information below.</p>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+
+        <form method="POST">
+
+            {% csrf_token %}
+
+            <div class="row g-3">
+
+                <div class="col-md-6">
+                    <label class="form-label">Product Name</label>
+                    <input
+    type="text"
+    name="name"
+    class="form-control {% if errors.name %}is-invalid{% endif %}"
+    value="{{ form_data.name|default:'' }}"
+    required
+>
+
+{% if errors.name %}
+    <div class="invalid-feedback">
+        {{ errors.name }}
+    </div>
+{% endif %}
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Product Code</label>
+
+<input
+    type="text"
+    name="product_code"
+    class="form-control {% if errors.product_code %}is-invalid{% endif %}"
+    value="{{ form_data.product_code|default:'' }}"
+    required
+>
+
+{% if errors.product_code %}
+    <div class="invalid-feedback">
+        {{ errors.product_code }}
+    </div>
+{% endif %}
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Category</label>
+
+<input
+    type="text"
+    name="category"
+    class="form-control {% if errors.category %}is-invalid{% endif %}"
+    value="{{ form_data.category|default:'' }}"
+    required
+>
+
+{% if errors.category %}
+    <div class="invalid-feedback">
+        {{ errors.category }}
+    </div>
+{% endif %}
+                </div>
+
+                <div class="col-md-6">
+                   <label class="form-label">Purchase Price (Rs.)</label>
+
+<input
+    type="number"
+    step="0.01"
+    name="purchase_price"
+    class="form-control {% if errors.purchase_price %}is-invalid{% endif %}"
+    value="{{ form_data.purchase_price|default:'' }}"
+    required
+>
+
+{% if errors.purchase_price %}
+    <div class="invalid-feedback">
+        {{ errors.purchase_price }}
+    </div>
+{% endif %}
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Selling Price (Rs.)</label>
+                  
+                <div id="price-warning" class="text-warning small mt-2" style="display: none;">
+    <strong>Warning:</strong> Selling price is lower than purchase price.
+    You may incur a loss on each sale.
+</div>
+
+<input
+    type="number"
+    step="0.01"
+    name="selling_price"
+    class="form-control {% if errors.selling_price %}is-invalid{% endif %}"
+    value="{{ form_data.selling_price|default:'' }}"
+    required
+>
+
+{% if errors.selling_price %}
+    <div class="invalid-feedback">
+        {{ errors.selling_price }}
+    </div>
+{% endif %}
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Stock Quantity</label>
+
+<input
+    type="number"
+    step="1"
+    name="stock_quantity"
+    class="form-control {% if errors.stock_quantity %}is-invalid{% endif %}"
+    value="{{ form_data.stock_quantity|default:'' }}"
+    required
+>
+
+{% if errors.stock_quantity %}
+    <div class="invalid-feedback">
+        {{ errors.stock_quantity }}
+    </div>
+{% endif %}
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label">Description (Optional)</label>
+
+<textarea
+    name="description"
+    class="form-control {% if errors.description %}is-invalid{% endif %}"
+    rows="3"
+>{{ form_data.description|default:'' }}</textarea>
+
+{% if errors.description %}
+    <div class="invalid-feedback">
+        {{ errors.description }}
+    </div>
+{% endif %}
+
+            </div>
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">
+                {% if product %}
+                    Update Product
+                {% else %}
+                    Save Product
+                {% endif %}
+                </button>
+
+                <a href="{% url 'product_list' %}" class="btn btn-secondary">
+                    Cancel
+                </a>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+<script>
+
+    const purchasePrice = document.querySelector('[name="purchase_price"]');
+    const sellingPrice = document.querySelector('[name="selling_price"]');
+    const priceWarning = document.getElementById('price-warning');
+
+    function checkSellingPrice() {
+
+        const purchase = parseFloat(purchasePrice.value);
+        const selling = parseFloat(sellingPrice.value);
+
+        if (
+            purchasePrice.value !== '' &&
+            sellingPrice.value !== '' &&
+            purchase > 0 &&
+            selling > 0 &&
+            selling < purchase
+        ) {
+            priceWarning.style.display = 'block';
+        } else {
+            priceWarning.style.display = 'none';
+        }
+    }
+
+    purchasePrice.addEventListener('input', checkSellingPrice);
+    sellingPrice.addEventListener('input', checkSellingPrice);
+
+    checkSellingPrice();
+
+</script>
+
+{% endblock %}

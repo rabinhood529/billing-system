@@ -1,0 +1,301 @@
+
+{% extends "core/base.html" %}
+
+{% block title %}Invoice Details | Billing System{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+            <h3>Invoice Details</h3>
+            <p class="text-muted mb-0">
+                Invoice: {{ invoice.invoice_number }}
+            </p>
+        </div>
+
+        <div>
+            <button onclick="window.print()" class="btn btn-primary me-2">
+                <i class="bi bi-printer me-1"></i>
+                Print Invoice
+            </button>
+
+            <a href="{% url 'pos' %}" class="btn btn-outline-secondary">
+                Back to POS
+            </a>
+        </div>
+
+    </div>
+
+    <!-- Invoice -->
+    <div class="card shadow-sm" id="invoice-content">
+
+        <div class="card-body p-4 p-md-5">
+
+            <!-- Business Header -->
+            <div class="row mb-4">
+
+                <div class="col-md-6">
+                    <h2 class="fw-bold text-primary">Billing System</h2>
+                    <p class="text-muted mb-0">
+                        Sales Invoice
+                    </p>
+                </div>
+
+                <div class="col-md-6 text-md-end">
+                    <h4 class="fw-bold">INVOICE</h4>
+                    <p class="mb-1">
+                        <strong>Invoice No:</strong>
+                        {{ invoice.invoice_number }}
+                    </p>
+                    <p class="mb-0">
+                        <strong>Date:</strong>
+                        {{ invoice.created_at|date:"d M Y, h:i A" }}
+                    </p>
+                </div>
+
+            </div>
+
+            <hr>
+
+            <!-- Customer Information -->
+            <div class="row mb-4">
+
+                <div class="col-md-6">
+                    <h6 class="text-muted text-uppercase">
+                        Billed To
+                    </h6>
+
+                    <h5 class="fw-bold">
+                        {{ invoice.customer_name }}
+                    </h5>
+
+                    {% if invoice.customer %}
+                        <p class="text-muted mb-0">
+                            {{ invoice.customer.phone }}
+                        </p>
+
+                        {% if invoice.customer.address %}
+                            <p class="text-muted mb-0">
+                                {{ invoice.customer.address }}
+                            </p>
+                        {% endif %}
+                    {% endif %}
+                </div>
+
+                <div class="col-md-6 text-md-end">
+
+                    <h6 class="text-muted text-uppercase">
+                        Payment Information
+                    </h6>
+
+                    <p class="mb-1">
+                        <strong>Method:</strong>
+                        {{ invoice.get_payment_method_display }}
+                    </p>
+
+                    <p class="mb-0">
+                        <strong>Status:</strong>
+
+                        {% if invoice.payment_status == 'paid' %}
+                            <span class="badge bg-success">Paid</span>
+                        {% elif invoice.payment_status == 'partial' %}
+                            <span class="badge bg-warning text-dark">
+                                Partially Paid
+                            </span>
+                        {% else %}
+                            <span class="badge bg-danger">Unpaid</span>
+                        {% endif %}
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <!-- Products Table -->
+            <div class="table-responsive">
+
+                <table class="table table-bordered align-middle">
+
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Product</th>
+                            <th>Product Code</th>
+                            <th>Unit Price</th>
+                            <th>Quantity</th>
+                            <th class="text-end">Amount</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for item in invoice_items %}
+
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ item.product_name }}</td>
+                                <td>{{ item.product_code }}</td>
+                                <td>Rs. {{ item.unit_price|floatformat:2 }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td class="text-end">
+                                    Rs. {{ item.line_total|floatformat:2 }}
+                                </td>
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            <!-- Invoice Totals -->
+            <div class="row justify-content-end mt-4">
+
+                <div class="col-md-5">
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Subtotal:</span>
+                        <strong>
+                            Rs. {{ invoice.subtotal|floatformat:2 }}
+                        </strong>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Discount:</span>
+                        <strong class="text-danger">
+                            - Rs. {{ invoice.discount|floatformat:2 }}
+                        </strong>
+                    </div>
+
+                    <hr>
+
+                    <div class="d-flex justify-content-between mb-3">
+                        <h5>Grand Total:</h5>
+                        <h5 class="text-success">
+                            Rs. {{ invoice.total|floatformat:2 }}
+                        </h5>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Amount Paid:</span>
+                        <strong>
+                            Rs. {{ invoice.amount_paid|floatformat:2 }}
+                        </strong>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <h5 class="text-danger">Due Amount:</h5>
+                        <h5 class="text-danger">
+                            Rs. {{ invoice.due_amount|floatformat:2 }}
+                        </h5>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <hr class="mt-4">
+
+            <div class="text-center mt-2">
+    <h6 class="fw-bold mb-1">Thank you for your business!</h6>
+    <p class="text-muted small mb-0">
+        Please keep this invoice for your records.
+    </p>
+</div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+{% block extra_css %}
+<style>
+    @media print {
+
+        @page {
+            size: A4 portrait;
+            margin: 8mm;
+        }
+
+        html,
+        body {
+            background: white !important;
+            font-size: 12px !important;
+        }
+
+        .sidebar,
+        .navbar,
+        button,
+        a,
+        .btn {
+            display: none !important;
+        }
+
+        .container-fluid {
+            width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        #invoice-content {
+            width: 100% !important;
+            border: none !important;
+            box-shadow: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        #invoice-content .card-body {
+            padding: 0 !important;
+        }
+
+        #invoice-content .row {
+            break-inside: avoid;
+        }
+
+        #invoice-content table {
+            font-size: 11px !important;
+        }
+
+        #invoice-content .table-responsive {
+            overflow: visible !important;
+        }
+
+        #invoice-content .row.justify-content-end {
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        #invoice-content hr {
+            margin-top: 8px !important;
+            margin-bottom: 8px !important;
+        }
+
+        #invoice-content h2,
+        #invoice-content h4,
+        #invoice-content h5,
+        #invoice-content h6,
+        #invoice-content p {
+            margin-bottom: 5px !important;
+        }
+
+        #invoice-content .mt-4,
+        #invoice-content .mb-4 {
+            margin-top: 10px !important;
+            margin-bottom: 10px !important;
+        }
+    }
+</style>
+{% endblock %}
+

@@ -1,0 +1,68 @@
+
+{% extends "core/base.html" %}
+
+{% block title %}
+Dashboard | Billing System
+{% endblock %}
+
+{% block content %}
+
+<h3 class="mb-4">Dashboard Overview</h3>
+
+<!-- Summary Cards -->
+<div class="row g-3">
+
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <h6 class="text-muted">Total Sales</h6>
+                <h3>Rs. 0.00</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <h6 class="text-muted">Total Products</h6>
+                <h3>0</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <h6 class="text-muted">Total Customers</h6>
+                <h3>0</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <h6 class="text-muted">Total Invoices</h6>
+                <h3>0</h3>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Recent Sales -->
+<div class="card shadow-sm border-0 mt-4">
+
+    <div class="card-body">
+
+        <h5 class="mb-3">Recent Sales</h5>
+
+        <p class="text-muted mb-0">
+            No sales records available yet.
+        </p>
+
+    </div>
+
+</div>
+
+{% endblock %}

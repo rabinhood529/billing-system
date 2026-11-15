@@ -1,0 +1,122 @@
+
+{% extends "core/base.html" %}
+
+{% block title %}
+{% if customer %}Edit Customer{% else %}Add Customer{% endif %} | Billing System
+{% endblock %}
+
+{% block content %}
+
+<div class="mb-4">
+    <h3>{% if customer %}Edit Customer{% else %}Add New Customer{% endif %}</h3>
+    <p class="text-muted">Enter the customer information below.</p>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+
+        <form method="POST">
+
+            {% csrf_token %}
+
+            <div class="row g-3">
+
+                <!-- Customer Name -->
+                <div class="col-md-6">
+
+                    <label class="form-label">Customer Name</label>
+
+                    <input
+                        type="text"
+                        name="name"
+                        class="form-control {% if errors.name %}is-invalid{% endif %}"
+                        value="{{ form_data.name|default:'' }}"
+                        maxlength="200"
+                        required
+                    >
+
+                    {% if errors.name %}
+                        <div class="invalid-feedback">
+                            {{ errors.name }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+                <!-- Phone Number -->
+                <div class="col-md-6">
+
+                    <label class="form-label">Phone Number</label>
+
+                    <input
+                        type="text"
+                        name="phone"
+                        class="form-control {% if errors.phone %}is-invalid{% endif %}"
+                        value="{{ form_data.phone|default:'' }}"
+                        maxlength="20"
+                        placeholder="9800000001 or +9779800000001"
+                        required
+                    >
+
+                    {% if errors.phone %}
+                        <div class="invalid-feedback">
+                            {{ errors.phone }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+                <!-- Email -->
+                <div class="col-md-6">
+
+                    <label class="form-label">Email (Optional)</label>
+
+                    <input
+                        type="email"
+                        name="email"
+                        class="form-control {% if errors.email %}is-invalid{% endif %}"
+                        value="{{ form_data.email|default:'' }}"
+                        maxlength="254"
+                    >
+
+                    {% if errors.email %}
+                        <div class="invalid-feedback">
+                            {{ errors.email }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+                <!-- Address -->
+                <div class="col-12">
+
+                    <label class="form-label">Address (Optional)</label>
+
+                    <textarea
+                        name="address"
+                        class="form-control"
+                        rows="3"
+                    >{{ form_data.address|default:'' }}</textarea>
+
+                </div>
+
+            </div>
+
+            <div class="mt-4">
+
+                <button type="submit" class="btn btn-primary">
+                    {% if customer %}Update Customer{% else %}Save Customer{% endif %}
+                </button>
+
+                <a href="{% url 'customer_list' %}" class="btn btn-secondary">
+                    Cancel
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,144 @@
+
+{% extends "core/base.html" %}
+
+{% block title %}
+Products | Billing System
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    <div>
+        <h3 class="mb-1">Product Management</h3>
+        <p class="text-muted mb-0">
+            Manage your store products and stock.
+        </p>
+    </div>
+
+    <a href="{% url 'product_create' %}" class="btn btn-primary">
+        + Add Product
+    </a>
+
+</div>
+
+<form method="GET" class="mb-4">
+    <div class="input-group">
+
+        <input
+            type="text"
+            name="search"
+            class="form-control"
+            placeholder="Search by product name, code or category..."
+            value="{{ search_query }}"
+        >
+
+        <button type="submit" class="btn btn-primary">
+            Search
+        </button>
+
+        <a href="{% url 'product_list' %}" class="btn btn-secondary">
+            Clear
+        </a>
+
+    </div>
+</form>
+
+<div class="card shadow-sm border-0">
+
+    <div class="card-body">
+
+        <h5 class="mb-3">All Products</h5>
+
+        <div class="table-responsive">
+
+            <table class="table table-hover align-middle">
+
+                <thead class="table-light">
+                    <tr>
+                        <th>Product Name</th>
+                        <th>Product Code</th>
+                        <th>Category</th>
+                        <th>Purchase Price</th>
+                        <th>Selling Price</th>
+                        <th>Stock</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for product in products %}
+
+                    <tr>
+                        <td>{{ product.name }}</td>
+
+                        <td>{{ product.product_code }}</td>
+
+                        <td>{{ product.category }}</td>
+
+                        <td>Rs. {{ product.purchase_price }}</td>
+
+                        <td>Rs. {{ product.selling_price }}</td>
+
+                        <td>
+                            {{ product.stock_quantity }}
+
+                            <br>
+
+                            {% if product.stock_status == 'In Stock' %}
+
+                                <span class="badge bg-success">
+                                    In Stock
+                                </span>
+
+                            {% elif product.stock_status == 'Low Stock' %}
+
+                                <span class="badge bg-warning text-dark">
+                                    Low Stock
+                                </span>
+
+                            {% else %}
+
+                                <span class="badge bg-danger">
+                                    Out of Stock
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+                            <a href="{% url 'product_edit' product.id %}"
+                               class="btn btn-sm btn-warning">
+                                Edit
+                            </a>
+
+                            <a href="{% url 'product_delete' product.id %}"
+                               class="btn btn-sm btn-danger">
+                                Delete
+                            </a>
+                        </td>
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">
+                            No products available.
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

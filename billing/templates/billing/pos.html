@@ -1,0 +1,261 @@
+
+{% extends "core/base.html" %}
+
+{% block title %}Billing / POS{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <h2 class="mb-4">Billing / Point of Sale</h2>
+
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Customer Selection -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Select Customer</h5>
+        </div>
+
+        <div class="card-body">
+            <form method="POST" action="{% url 'update_customer' %}">
+                {% csrf_token %}
+
+                <div class="row align-items-end">
+                    <div class="col-md-8">
+                        <label class="form-label">Customer</label>
+
+                        <select name="customer" class="form-select">
+                            <option value="">Walk-in Customer</option>
+
+                            {% for customer in customers %}
+                                <option
+                                    value="{{ customer.id }}"
+                                    {% if selected_customer_id == customer.id %}selected{% endif %}
+                                >
+                                    {{ customer.name }} - {{ customer.phone }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary w-100">
+                            Select Customer
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Available Products -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+
+            <h5 class="mb-3">Available Products</h5>
+
+            {% if products %}
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Product Name</th>
+                                <th>Product Code</th>
+                                <th>Category</th>
+                                <th>Selling Price</th>
+                                <th>Stock</th>
+                                <th style="min-width: 190px;">Quantity / Action</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for product in products %}
+                                <tr>
+                                    <td>{{ product.name }}</td>
+                                    <td>{{ product.product_code }}</td>
+                                    <td>{{ product.category }}</td>
+                                    <td>Rs. {{ product.selling_price }}</td>
+                                    <td>{{ product.stock_quantity }}</td>
+                                    <td>
+                                        <form method="POST"
+                                              action="{% url 'add_to_cart' product.id %}"
+                                              class="d-flex gap-2">
+                                            {% csrf_token %}
+
+                                            <input
+                                                type="number"
+                                                name="quantity"
+                                                value="1"
+                                                min="1"
+                                                max="{{ product.stock_quantity }}"
+                                                class="form-control"
+                                                style="width: 75px;"
+                                                required
+                                            >
+
+                                            <button type="submit" class="btn btn-primary btn-sm">
+                                                Add
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info mb-0">
+                    No products are currently available in stock.
+                </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+    <!-- Shopping Cart -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <h5 class="mb-3">Shopping Cart</h5>
+
+            {% if cart_items %}
+
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Product</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th>Amount</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for item in cart_items %}
+                                <tr>
+                                    <td>{{ item.product.name }}</td>
+                                    <td>Rs. {{ item.product.selling_price }}</td>
+
+                                    <td>
+                                        <form method="POST"
+                                              action="{% url 'update_cart' item.product.id %}"
+                                              class="d-flex gap-2 align-items-center">
+                                            {% csrf_token %}
+
+                                            <input
+                                                type="number"
+                                                name="quantity"
+                                                value="{{ item.quantity }}"
+                                                min="1"
+                                                max="{{ item.product.stock_quantity }}"
+                                                class="form-control"
+                                                style="width: 80px;"
+                                                required
+                                            >
+
+                                            <button type="submit" class="btn btn-success btn-sm">
+                                                Update
+                                            </button>
+                                        </form>
+                                    </td>
+
+                                    <td>Rs. {{ item.line_total }}</td>
+
+                                    <td>
+                                        <form method="POST"
+                                              action="{% url 'remove_from_cart' item.product.id %}">
+                                            {% csrf_token %}
+
+                                            <button type="submit" class="btn btn-danger btn-sm">
+                                                Remove
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Discount and Total -->
+                <div class="row justify-content-end mt-4">
+                    <div class="col-md-5">
+
+                        <form method="POST" action="{% url 'update_discount' %}">
+                            {% csrf_token %}
+
+                            <label class="form-label fw-bold">
+                                Discount (Rs.)
+                            </label>
+
+                            <div class="input-group mb-3">
+                                <input
+                                    type="number"
+                                    name="discount"
+                                    class="form-control"
+                                    value="{{ discount }}"
+                                    min="0"
+                                    max="{{ subtotal }}"
+                                    step="0.01"
+                                    required
+                                >
+
+                                <button type="submit" class="btn btn-primary">
+                                    Apply Discount
+                                </button>
+                            </div>
+                        </form>
+
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Subtotal:</span>
+                            <strong>Rs. {{ subtotal }}</strong>
+                        </div>
+
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Discount:</span>
+                            <strong class="text-danger">- Rs. {{ discount }}</strong>
+                        </div>
+
+                        <hr>
+
+                        <div class="d-flex justify-content-between">
+                            <h5>Grand Total:</h5>
+                            <h5 class="text-success">Rs. {{ grand_total }}</h5>
+                        </div>
+
+                        <!-- Proceed to Checkout -->
+                        <div class="d-grid mt-4">
+                            <a href="{% url 'checkout' %}"
+                               class="btn btn-success btn-lg">
+                                Proceed to Checkout
+                            </a>
+                        </div>
+
+                    </div>
+                </div>
+
+            {% else %}
+
+                <div class="alert alert-secondary mb-0">
+                    Your shopping cart is empty.
+                </div>
+
+            {% endif %}
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
