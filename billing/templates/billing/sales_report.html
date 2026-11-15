@@ -1,0 +1,181 @@
+
+{% extends 'core/base.html' %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <h2 class="mb-4">Sales Reports</h2>
+    
+
+<!-- Report Date Filter -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+
+        <form method="GET" class="row g-3 align-items-end">
+
+            <div class="col-md-3">
+                <label class="form-label">Select Period</label>
+
+                <select name="period" class="form-select"
+                        onchange="this.form.submit()">
+
+                    <option value="all" {% if period == 'all' %}selected{% endif %}>
+                        All
+                    </option>
+
+                    <option value="today" {% if period == 'today' %}selected{% endif %}>
+                        Today
+                    </option>
+
+                    <option value="week" {% if period == 'week' %}selected{% endif %}>
+                        This Week
+                    </option>
+
+                    <option value="month" {% if period == 'month' %}selected{% endif %}>
+                        This Month
+                    </option>
+
+                    <option value="year" {% if period == 'year' %}selected{% endif %}>
+                        This Year
+                    </option>
+
+                    <option value="custom" {% if period == 'custom' %}selected{% endif %}>
+                        Custom Date Range
+                    </option>
+
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Start Date</label>
+                <input type="date" name="start_date"
+                       class="form-control"
+                       value="{{ start_date|date:'Y-m-d' }}">
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">End Date</label>
+                <input type="date" name="end_date"
+                       class="form-control"
+                       value="{{ end_date|date:'Y-m-d' }}">
+            </div>
+
+            <div class="col-md-3">
+                <button type="submit" name="period" value="custom"
+                        class="btn btn-primary w-100">
+                    Apply Filter
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+
+    <div class="row g-3">
+
+        <!-- Total Sales -->
+        <div class="col-md-3">
+            <div class="card shadow-sm p-3">
+                <h6 class="text-muted">Total Sales</h6>
+                <h3>Rs. {{ total_sales|floatformat:2 }}</h3>
+            </div>
+        </div>
+
+        <!-- Total Invoices -->
+        <div class="col-md-3">
+            <div class="card shadow-sm p-3">
+                <h6 class="text-muted">Total Invoices</h6>
+                <h3>{{ total_invoices }}</h3>
+            </div>
+        </div>
+
+        <!-- Total Collected -->
+        <div class="col-md-3">
+            <div class="card shadow-sm p-3">
+                <h6 class="text-muted">Amount Collected</h6>
+                <h3>Rs. {{ total_collected|floatformat:2 }}</h3>
+            </div>
+        </div>
+
+        <!-- Total Due -->
+        <div class="col-md-3">
+            <div class="card shadow-sm p-3">
+                <h6 class="text-muted">Outstanding Due</h6>
+                <h3>Rs. {{ total_due|floatformat:2 }}</h3>
+            </div>
+        </div>
+
+
+<!-- Payment Method Report -->
+<div class="card shadow-sm mt-4">
+
+    <div class="card-header bg-white">
+        <h5 class="mb-0">Sales by Payment Method</h5>
+    </div>
+
+    <div class="card-body">
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+
+                <thead class="table-light">
+                    <tr>
+                        <th>Payment Method</th>
+                        <th>Total Sales</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for item in payment_method_report %}
+
+                    <tr>
+                        <td>
+                            {% if item.payment_method == 'cash' %}
+                                Cash
+                            {% elif item.payment_method == 'qr' %}
+                                QR Payment
+                            {% elif item.payment_method == 'bank' %}
+                                Bank Transfer
+                            {% elif item.payment_method == 'card' %}
+                                Card
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            Rs. {{ item.total|floatformat:2 }}
+                        </td>
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+                        <td colspan="2" class="text-center text-muted">
+                            No sales found for this period.
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+        </div>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+    </div>
+
+</div>
+
+{% endblock %}

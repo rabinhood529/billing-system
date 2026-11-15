@@ -45,5 +45,15 @@ path(
     views.invoice_detail,
     name='invoice_detail'
 ),
+path(
+    'invoices/',
+    views.invoice_list,
+    name='invoice_list'
+),
 
+path(
+    'reports/',
+    views.sales_report,
+    name='sales_report'
+),
 ]

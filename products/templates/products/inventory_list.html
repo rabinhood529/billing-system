@@ -1,0 +1,202 @@
+
+{% extends "core/base.html" %}
+
+{% block title %}
+Inventory Management | Billing System
+{% endblock %}
+
+{% block content %}
+
+<!-- Page Heading -->
+<div class="mb-4">
+    <h3 class="mb-1">Inventory Management</h3>
+    <p class="text-muted mb-0">
+        Monitor product availability and stock levels.
+    </p>
+</div>
+
+<!-- Stock Summary Cards -->
+<div class="row g-3 mb-4">
+
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <p class="text-muted mb-1">Total Products</p>
+                <h3 class="mb-0">{{ total_products }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <p class="text-muted mb-1">In Stock</p>
+                <h3 class="text-success mb-0">{{ in_stock_count }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <p class="text-muted mb-1">Low Stock</p>
+                <h3 class="text-warning mb-0">{{ low_stock_count }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <p class="text-muted mb-1">Out of Stock</p>
+                <h3 class="text-danger mb-0">{{ out_of_stock_count }}</h3>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Search and Filter -->
+<form method="GET" class="mb-4">
+
+    <div class="row g-2">
+
+        <div class="col-md-6">
+            <input
+                type="text"
+                name="search"
+                class="form-control"
+                placeholder="Search by product name or code..."
+                value="{{ search_query }}"
+            >
+        </div>
+
+        <div class="col-md-3">
+
+            <select name="stock_status" class="form-select">
+
+                <option value="">All Stock Statuses</option>
+
+                <option value="in_stock"
+                    {% if selected_stock_status == 'in_stock' %}selected{% endif %}>
+                    In Stock
+                </option>
+
+                <option value="low_stock"
+                    {% if selected_stock_status == 'low_stock' %}selected{% endif %}>
+                    Low Stock
+                </option>
+
+                <option value="out_of_stock"
+                    {% if selected_stock_status == 'out_of_stock' %}selected{% endif %}>
+                    Out of Stock
+                </option>
+
+            </select>
+
+        </div>
+
+        <div class="col-md-3 d-flex gap-2">
+
+            <button type="submit" class="btn btn-primary">
+                Search / Filter
+            </button>
+
+            <a href="{% url 'inventory_list' %}" class="btn btn-secondary">
+                Clear
+            </a>
+
+        </div>
+
+    </div>
+
+</form>
+
+<!-- Inventory Table -->
+<div class="card shadow-sm border-0">
+
+    <div class="card-body">
+
+        <h5 class="mb-3">Product Stock Details</h5>
+
+        <div class="table-responsive">
+
+            <table class="table table-hover align-middle">
+
+                <thead class="table-light">
+                    <tr>
+                        <th>Product Name</th>
+                        <th>Product Code</th>
+                        <th>Category</th>
+                        <th>Purchase Price</th>
+                        <th>Selling Price</th>
+                        <th>Available Stock</th>
+                        <th>Stock Status</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for product in products %}
+
+                    <tr>
+
+                        <td>{{ product.name }}</td>
+
+                        <td>{{ product.product_code }}</td>
+
+                        <td>{{ product.category }}</td>
+
+                        <td>Rs. {{ product.purchase_price }}</td>
+
+                        <td>Rs. {{ product.selling_price }}</td>
+
+                        <td>{{ product.stock_quantity }}</td>
+
+                        <td>
+
+                            {% if product.stock_status == 'In Stock' %}
+
+                                <span class="badge bg-success">
+                                    In Stock
+                                </span>
+
+                            {% elif product.stock_status == 'Low Stock' %}
+
+                                <span class="badge bg-warning text-dark">
+                                    Low Stock
+                                </span>
+
+                            {% else %}
+
+                                <span class="badge bg-danger">
+                                    Out of Stock
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">
+                            No products found.
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

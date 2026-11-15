@@ -62,14 +62,14 @@
             <h4 class="mb-4">Billing System</h4>
 
             <nav>
-                <a href="#">Dashboard</a>
-                <a href="#">Products</a>
-                <a href="#">Customers</a>
-                <a href="#">Billing / POS</a>
-                <a href="#">Invoices</a>
-                <a href="#">Inventory</a>
-                <a href="#">Reports</a>
-            </nav>
+                <a href="{% url 'dashboard' %}">Dashboard</a>
+                <a href="{% url 'product_list' %}">Products</a>
+                <a href="{% url 'customer_list' %}">Customers</a>
+                <a href="{% url 'pos' %}">Billing / POS</a>
+                <a href="{% url 'invoice_list' %}">Invoices</a>
+                <a href="{% url 'inventory_list' %}">Inventory</a>
+                <a href="{% url 'sales_report' %}">Reports</a>
+</nav>
 
         </aside>
 

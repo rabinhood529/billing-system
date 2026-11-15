@@ -238,3 +238,69 @@ def product_delete(request, product_id):
             'product': product
         }
     )
+
+def inventory_list(request):
+
+    products = Product.objects.all()
+
+    # Search products by name or product code.
+    search_query = request.GET.get('search', '').strip()
+
+    if search_query:
+        products = products.filter(
+            name__icontains=search_query
+        ) | products.filter(
+            product_code__icontains=search_query
+        )
+
+    # Filter products by stock status.
+    stock_status = request.GET.get('stock_status', '')
+
+    if stock_status == 'in_stock':
+        products = products.filter(stock_quantity__gt=5)
+
+    elif stock_status == 'low_stock':
+        products = products.filter(stock_quantity__gt=0, stock_quantity__lte=5)
+
+    elif stock_status == 'out_of_stock':
+        products = products.filter(stock_quantity=0)
+
+    # Calculate stock summary.
+    total_products = Product.objects.count()
+
+    in_stock_count = Product.objects.filter(
+        stock_quantity__gt=5
+    ).count()
+
+    low_stock_count = Product.objects.filter(
+        stock_quantity__gt=0,
+        stock_quantity__lte=5
+    ).count()
+
+    out_of_stock_count = Product.objects.filter(
+        stock_quantity=0
+    ).count()
+
+    # Assign stock labels.
+    for product in products:
+
+        if product.stock_quantity == 0:
+            product.stock_status = 'Out of Stock'
+
+        elif product.stock_quantity <= 5:
+            product.stock_status = 'Low Stock'
+
+        else:
+            product.stock_status = 'In Stock'
+
+    context = {
+        'products': products,
+        'search_query': search_query,
+        'selected_stock_status': stock_status,
+        'total_products': total_products,
+        'in_stock_count': in_stock_count,
+        'low_stock_count': low_stock_count,
+        'out_of_stock_count': out_of_stock_count,
+    }
+
+    return render(request, 'products/inventory_list.html', context)

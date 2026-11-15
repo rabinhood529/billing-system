@@ -1,13 +1,20 @@
 
+
+
+
 from decimal import Decimal, InvalidOperation
+from datetime import timedelta
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.db import transaction
+from django.db.models import Q, Sum
+
 
 from products.models import Product
 from customers.models import Customer
 from .models import Invoice, InvoiceItem
+from django.utils import timezone 
 
 
 def pos(request):
@@ -443,5 +450,132 @@ def invoice_detail(request, invoice_id):
     return render(
         request,
         'billing/invoice_detail.html',
+        context
+    )
+
+
+
+def invoice_list(request):
+
+    invoices = Invoice.objects.all()
+
+    # Search invoices by invoice number or customer name.
+    search_query = request.GET.get('search', '').strip()
+
+    if search_query:
+        invoices = invoices.filter(
+            Q(invoice_number__icontains=search_query) |
+            Q(customer_name__icontains=search_query) |
+            Q(customer__phone__icontains=search_query)
+)
+
+    # Filter invoices by payment status.
+    payment_status = request.GET.get('payment_status', '')
+
+    if payment_status in ['paid', 'unpaid', 'partial']:
+        invoices = invoices.filter(
+            payment_status=payment_status
+        )
+
+    context = {
+        'invoices': invoices,
+        'search_query': search_query,
+        'selected_payment_status': payment_status,
+    }
+
+    return render(request, 'billing/invoice_list.html', context)
+
+
+
+def sales_report(request):
+
+    today = timezone.localdate()
+
+    period = request.GET.get('period', 'all')
+    start_date = None
+    end_date = None
+
+    if period == 'today':
+        start_date = today
+        end_date = today
+
+    elif period == 'week':
+        start_date = today - timedelta(days=today.weekday())
+        end_date = today
+
+    elif period == 'month':
+        start_date = today.replace(day=1)
+        end_date = today
+
+    elif period == 'year':
+        start_date = today.replace(month=1, day=1)
+        end_date = today
+
+    elif period == 'custom':
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
+
+        try:
+            start_date = timezone.datetime.strptime(
+                start_date, '%Y-%m-%d'
+            ).date() if start_date else None
+
+            end_date = timezone.datetime.strptime(
+                end_date, '%Y-%m-%d'
+            ).date() if end_date else None
+
+            if not start_date or not end_date:
+                messages.error(request, 'Please select both dates.')
+
+            elif start_date > end_date:
+                messages.error(
+                    request,
+                    'Start date cannot be after end date.'
+                )
+                start_date = None
+                end_date = None
+
+        except ValueError:
+            messages.error(request, 'Please enter valid dates.')
+            start_date = None
+            end_date = None
+
+    # Get completed invoices only.
+    invoices = Invoice.objects.filter(status='completed')
+
+    # Apply date filter.
+    if start_date and end_date:
+        invoices = invoices.filter(
+            created_at__date__gte=start_date,
+            created_at__date__lte=end_date
+        )
+
+    # Group sales by payment method.
+    payment_method_report = invoices.values(
+        'payment_method'
+    ).annotate(
+        total=Sum('total')
+    ).order_by('payment_method')
+
+    context = {
+        'total_sales': sum(
+            invoice.total for invoice in invoices
+        ),
+        'total_invoices': invoices.count(),
+        'total_collected': sum(
+            invoice.amount_paid for invoice in invoices
+        ),
+        'total_due': sum(
+            invoice.due_amount for invoice in invoices
+        ),
+        'payment_method_report': payment_method_report,
+        'period': period,
+        'start_date': start_date,
+        'end_date': end_date,
+    }
+
+    return render(
+        request,
+        'billing/sales_report.html',
         context
     )
