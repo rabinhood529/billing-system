@@ -12,38 +12,42 @@ Dashboard | Billing System
 <!-- Summary Cards -->
 <div class="row g-3">
 
+    <!-- Total Sales -->
     <div class="col-md-3">
-        <div class="card shadow-sm border-0">
+        <div class="card shadow-sm border-0 h-100">
             <div class="card-body">
                 <h6 class="text-muted">Total Sales</h6>
-                <h3>Rs. 0.00</h3>
+                <h3>Rs. {{ total_sales|floatformat:2 }}</h3>
             </div>
         </div>
     </div>
 
+    <!-- Total Products -->
     <div class="col-md-3">
-        <div class="card shadow-sm border-0">
+        <div class="card shadow-sm border-0 h-100">
             <div class="card-body">
                 <h6 class="text-muted">Total Products</h6>
-                <h3>0</h3>
+                <h3>{{ total_products }}</h3>
             </div>
         </div>
     </div>
 
+    <!-- Total Customers -->
     <div class="col-md-3">
-        <div class="card shadow-sm border-0">
+        <div class="card shadow-sm border-0 h-100">
             <div class="card-body">
                 <h6 class="text-muted">Total Customers</h6>
-                <h3>0</h3>
+                <h3>{{ total_customers }}</h3>
             </div>
         </div>
     </div>
 
+    <!-- Total Invoices -->
     <div class="col-md-3">
-        <div class="card shadow-sm border-0">
+        <div class="card shadow-sm border-0 h-100">
             <div class="card-body">
                 <h6 class="text-muted">Total Invoices</h6>
-                <h3>0</h3>
+                <h3>{{ total_invoices }}</h3>
             </div>
         </div>
     </div>
@@ -57,9 +61,63 @@ Dashboard | Billing System
 
         <h5 class="mb-3">Recent Sales</h5>
 
+        {% if recent_sales %}
+
+        <div class="table-responsive">
+
+            <table class="table table-hover align-middle mb-0">
+
+                <thead class="table-light">
+                    <tr>
+                        <th>Invoice Number</th>
+                        <th>Customer</th>
+                        <th>Date</th>
+                        <th>Total Amount</th>
+                        <th>Payment Status</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for invoice in recent_sales %}
+
+                    <tr>
+                        <td>{{ invoice.invoice_number }}</td>
+
+                        <td>{{ invoice.customer_name }}</td>
+
+                        <td>{{ invoice.created_at|date:"d M Y, h:i A" }}</td>
+
+                        <td>Rs. {{ invoice.total|floatformat:2 }}</td>
+
+                        <td>
+                            {% if invoice.payment_status == 'paid' %}
+                                <span class="badge bg-success">Paid</span>
+
+                            {% elif invoice.payment_status == 'partial' %}
+                                <span class="badge bg-warning text-dark">Partially Paid</span>
+
+                            {% else %}
+                                <span class="badge bg-danger">Unpaid</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        {% else %}
+
         <p class="text-muted mb-0">
             No sales records available yet.
         </p>
+
+        {% endif %}
 
     </div>
 
