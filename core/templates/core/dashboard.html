@@ -55,6 +55,23 @@ Dashboard | Billing System
 </div>
 
 <!-- Recent Sales -->
+
+
+<!-- Daily Sales Trend Chart -->
+<div class="card shadow-sm border-0 mt-4">
+
+    <div class="card-body">
+
+        <h5 class="mb-3">Daily Sales Trend</h5>
+
+        <div style="height: 300px;">
+            <canvas id="salesChart"></canvas>
+        </div>
+
+    </div>
+
+</div>
+
 <div class="card shadow-sm border-0 mt-4">
 
     <div class="card-body">
@@ -122,5 +139,61 @@ Dashboard | Billing System
     </div>
 
 </div>
+
+{{ sales_chart_labels|json_script:"sales-chart-labels" }}
+{{ sales_chart_values|json_script:"sales-chart-values" }}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const labels = JSON.parse(
+        document.getElementById('sales-chart-labels').textContent
+    );
+
+    const salesData = JSON.parse(
+        document.getElementById('sales-chart-values').textContent
+    );
+
+    const ctx = document.getElementById('salesChart');
+
+    new Chart(ctx, {
+        type: 'line',
+
+        data: {
+            labels: labels,
+
+            datasets: [{
+                label: 'Daily Sales (Rs.)',
+                data: salesData,
+                borderWidth: 2,
+                tension: 0.3,
+                fill: false
+            }]
+        },
+
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Sales (Rs.)'
+                    }
+                },
+
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Date'
+                    }
+                }
+            }
+        }
+    });
+</script>
+
 
 {% endblock %}
