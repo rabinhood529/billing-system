@@ -13,4 +13,5 @@ urlpatterns = [
     views.stock_adjustment,
     name='stock_adjustment'
 ),
+path('stock-history/', views.stock_history, name='stock_history'),
 ]

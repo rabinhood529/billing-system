@@ -11,7 +11,7 @@ from django.db import transaction
 from django.db.models import Q, Sum
 
 
-from products.models import Product
+from products.models import Product, StockMovement
 from customers.models import Customer
 from .models import Invoice, InvoiceItem
 from django.utils import timezone 
@@ -249,6 +249,7 @@ def update_customer(request):
     return redirect('pos')
 
 
+
 def checkout(request):
 
     cart = request.session.get('cart', {})
@@ -364,8 +365,10 @@ def checkout(request):
                 # Determine payment status.
                 if amount_paid == grand_total:
                     payment_status = 'paid'
+
                 elif amount_paid == 0:
                     payment_status = 'unpaid'
+
                 else:
                     payment_status = 'partial'
 
@@ -383,12 +386,13 @@ def checkout(request):
                     amount_paid=amount_paid,
                 )
 
-                # Create invoice items and reduce stock.
+                # Create invoice items, reduce stock and record movement.
                 for locked_item in locked_products:
 
                     product = locked_item['product']
                     quantity = locked_item['quantity']
 
+                    # Save invoice item.
                     InvoiceItem.objects.create(
                         invoice=invoice,
                         product=product,
@@ -400,9 +404,26 @@ def checkout(request):
                         line_total=product.selling_price * quantity,
                     )
 
+                    # Store stock before deduction.
+                    previous_stock = product.stock_quantity
+
+                    # Deduct sold quantity.
                     product.stock_quantity -= quantity
 
+                    # Store stock after deduction.
+                    new_stock = product.stock_quantity
+
                     product.save(update_fields=['stock_quantity'])
+
+                    # Record sale in stock movement history.
+                    StockMovement.objects.create(
+                        product=product,
+                        movement_type='sale',
+                        quantity=quantity,
+                        previous_stock=previous_stock,
+                        new_stock=new_stock,
+                        reason=f'Sale - Invoice {invoice.invoice_number}'
+                    )
 
         except Product.DoesNotExist:
             messages.error(

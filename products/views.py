@@ -429,3 +429,47 @@ def stock_adjustment(request):
         }
     )
 
+
+def stock_history(request):
+
+    movements = StockMovement.objects.select_related(
+        'product'
+    ).all()
+
+    # Product filter
+    selected_product = request.GET.get('product', '').strip()
+
+    if selected_product.isdigit():
+        movements = movements.filter(
+            product_id=int(selected_product)
+        )
+    else:
+        selected_product = ''
+
+    # Movement type filter
+    selected_type = request.GET.get('movement_type', '').strip()
+
+    valid_types = dict(StockMovement.MOVEMENT_TYPES)
+
+    if selected_type in valid_types:
+        movements = movements.filter(
+            movement_type=selected_type
+        )
+    else:
+        selected_type = ''
+
+    products = Product.objects.all().order_by('name')
+
+    context = {
+        'movements': movements,
+        'products': products,
+        'selected_product': selected_product,
+        'selected_type': selected_type,
+        'movement_types': StockMovement.MOVEMENT_TYPES,
+    }
+
+    return render(
+        request,
+        'products/stock_history.html',
+        context
+    )

@@ -1,0 +1,183 @@
+
+{% extends 'core/base.html' %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold">Stock Movement History</h2>
+            <p class="text-muted mb-0">
+                Track all stock increases, decreases and sales.
+            </p>
+        </div>
+
+        <a href="{% url 'inventory_list' %}"
+           class="btn btn-outline-secondary">
+            Back to Inventory
+        </a>
+    </div>
+
+
+    <!-- Filters -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+
+            <form method="GET" class="row g-3 align-items-end">
+
+                <div class="col-md-5">
+                    <label class="form-label">Product</label>
+
+                    <select name="product" class="form-select">
+                        <option value="">All Products</option>
+
+                        {% for product in products %}
+                            <option value="{{ product.id }}"
+                                {% if selected_product == product.id|stringformat:"s" %}
+                                    selected
+                                {% endif %}>
+                                {{ product.name }} ({{ product.product_code }})
+                            </option>
+                        {% endfor %}
+
+                    </select>
+                </div>
+
+
+                <div class="col-md-4">
+                    <label class="form-label">Movement Type</label>
+
+                    <select name="movement_type" class="form-select">
+                        <option value="">All Movements</option>
+
+                        {% for value, label in movement_types %}
+                            <option value="{{ value }}"
+                                {% if selected_type == value %}
+                                    selected
+                                {% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+
+                    </select>
+                </div>
+
+
+                <div class="col-md-3 d-flex gap-2">
+
+                    <button type="submit" class="btn btn-primary">
+                        Filter
+                    </button>
+
+                    <a href="{% url 'stock_history' %}"
+                       class="btn btn-outline-secondary">
+                        Reset
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+
+    <!-- Movement History Table -->
+    <div class="card shadow-sm">
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle">
+
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date & Time</th>
+                            <th>Product</th>
+                            <th>Movement Type</th>
+                            <th>Quantity</th>
+                            <th>Previous Stock</th>
+                            <th>New Stock</th>
+                            <th>Reason</th>
+                        </tr>
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for movement in movements %}
+
+                            <tr>
+
+                                <td>
+                                    {{ movement.created_at|date:"d M Y, h:i A" }}
+                                </td>
+
+                                <td>
+                                    <strong>{{ movement.product.name }}</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        {{ movement.product.product_code }}
+                                    </small>
+                                </td>
+
+                                <td>
+
+                                    {% if movement.movement_type == 'increase' %}
+
+                                        <span class="badge bg-success">
+                                            Stock Increased
+                                        </span>
+
+                                    {% elif movement.movement_type == 'decrease' %}
+
+                                        <span class="badge bg-danger">
+                                            Stock Decreased
+                                        </span>
+
+                                    {% elif movement.movement_type == 'sale' %}
+
+                                        <span class="badge bg-primary">
+                                            Stock Sold
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                                <td>{{ movement.quantity }}</td>
+
+                                <td>{{ movement.previous_stock }}</td>
+
+                                <td>{{ movement.new_stock }}</td>
+
+                                <td>{{ movement.reason }}</td>
+
+                            </tr>
+
+                        {% empty %}
+
+                            <tr>
+                                <td colspan="7"
+                                    class="text-center text-muted py-4">
+                                    No stock movement records found.
+                                </td>
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
