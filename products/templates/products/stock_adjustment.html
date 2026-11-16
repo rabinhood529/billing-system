@@ -1,0 +1,129 @@
+
+{% extends 'core/base.html' %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Stock Adjustment</h2>
+
+        <a href="{% url 'inventory_list' %}" class="btn btn-secondary">
+            Back to Inventory
+        </a>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}success{% endif %} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label class="form-label">Select Product</label>
+
+                    <select name="product" class="form-select" required>
+                        <option value="">Choose a product</option>
+
+                        {% for product in products %}
+                            <option
+                                value="{{ product.id }}"
+                                {% if form_data.product == product.id|stringformat:"s" %}selected{% endif %}
+                            >
+                                {{ product.name }} ({{ product.product_code }}) - Current Stock: {{ product.stock_quantity }}
+                            </option>
+                        {% endfor %}
+
+                    </select>
+
+                    {% if errors.product %}
+                        <div class="text-danger small mt-1">
+                            {{ errors.product }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Adjustment Type</label>
+
+                    <select name="movement_type" class="form-select" required>
+                        <option value="">Choose adjustment type</option>
+
+                        <option value="increase"
+                            {% if form_data.movement_type == 'increase' %}selected{% endif %}>
+                            Increase Stock
+                        </option>
+
+                        <option value="decrease"
+                            {% if form_data.movement_type == 'decrease' %}selected{% endif %}>
+                            Decrease Stock
+                        </option>
+                    </select>
+
+                    {% if errors.movement_type %}
+                        <div class="text-danger small mt-1">
+                            {{ errors.movement_type }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Quantity</label>
+
+                    <input
+                        type="number"
+                        name="quantity"
+                        class="form-control"
+                        min="1"
+                        step="1"
+                        value="{{ form_data.quantity|default:'' }}"
+                        required
+                    >
+
+                    {% if errors.quantity %}
+                        <div class="text-danger small mt-1">
+                            {{ errors.quantity }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Reason</label>
+
+                    <textarea
+                        name="reason"
+                        class="form-control"
+                        rows="3"
+                        maxlength="255"
+                        placeholder="Example: New stock received from supplier"
+                        required
+                    >{{ form_data.reason|default:'' }}</textarea>
+
+                    {% if errors.reason %}
+                        <div class="text-danger small mt-1">
+                            {{ errors.reason }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    Save Adjustment
+                </button>
+
+            </form>
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

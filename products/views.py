@@ -1,8 +1,9 @@
 
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Product
+from .models import Product, StockMovement
 from decimal import Decimal, InvalidOperation
-
+from django.contrib import messages
+from django.db import transaction
 
 def validate_product_data(request, product=None):
 
@@ -304,3 +305,127 @@ def inventory_list(request):
     }
 
     return render(request, 'products/inventory_list.html', context)
+
+def stock_adjustment(request):
+
+    products = Product.objects.all().order_by('name')
+
+    errors = {}
+    form_data = {}
+
+    if request.method == 'POST':
+
+        product_id = request.POST.get('product')
+        movement_type = request.POST.get('movement_type', '').strip()
+        quantity = request.POST.get('quantity', '').strip()
+        reason = request.POST.get('reason', '').strip()
+
+        form_data = {
+            'product': product_id,
+            'movement_type': movement_type,
+            'quantity': quantity,
+            'reason': reason,
+        }
+
+        # 1. Validate product
+        try:
+            product_id = int(product_id)
+
+            if product_id <= 0:
+                raise ValueError
+
+        except (ValueError, TypeError):
+            errors['product'] = 'Please select a valid product.'
+
+        # 2. Validate movement type
+        if movement_type not in ['increase', 'decrease']:
+            errors['movement_type'] = 'Select a valid adjustment type.'
+
+        # 3. Validate quantity
+        try:
+            quantity = int(quantity)
+
+            if quantity <= 0:
+                errors['quantity'] = 'Quantity must be greater than zero.'
+
+        except (ValueError, TypeError):
+            errors['quantity'] = 'Enter a valid whole number.'
+
+        # 4. Validate reason
+        if not reason:
+            errors['reason'] = 'Please provide a reason.'
+
+        elif len(reason) > 255:
+            errors['reason'] = 'Reason cannot exceed 255 characters.'
+
+        # 5. Process valid adjustment
+        if not errors:
+
+            with transaction.atomic():
+
+                product = get_object_or_404(
+                    Product.objects.select_for_update(),
+                    id=product_id
+                )
+
+                previous_stock = product.stock_quantity
+
+                if movement_type == 'increase':
+
+                    new_stock = previous_stock + quantity
+
+                else:
+
+                    new_stock = previous_stock - quantity
+
+                    if new_stock < 0:
+
+                        errors['quantity'] = (
+                            f'Cannot decrease by {quantity}. '
+                            f'Available stock is only {previous_stock}.'
+                        )
+
+                # 6. Save adjustment if stock is valid
+                if not errors:
+
+                    product.stock_quantity = new_stock
+
+                    product.save(
+                        update_fields=['stock_quantity']
+                    )
+
+                    StockMovement.objects.create(
+                        product=product,
+                        movement_type=movement_type,
+                        quantity=quantity,
+                        previous_stock=previous_stock,
+                        new_stock=new_stock,
+                        reason=reason
+                    )
+
+                    messages.success(
+                        request,
+                        f'Stock successfully adjusted for {product.name}.'
+                    )
+
+                    return redirect('stock_adjustment')
+
+        # 7. Invalid submission: show errors after redirect
+        if errors:
+
+            for error in errors.values():
+                messages.error(request, error)
+
+            return redirect('stock_adjustment')
+
+    # 8. Display a fresh form
+    return render(
+        request,
+        'products/stock_adjustment.html',
+        {
+            'products': products,
+            'errors': errors,
+            'form_data': form_data,
+        }
+    )
+
