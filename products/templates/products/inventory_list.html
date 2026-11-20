@@ -8,11 +8,31 @@ Inventory Management | Billing System
 {% block content %}
 
 <!-- Page Heading -->
-<div class="mb-4">
-    <h3 class="mb-1">Inventory Management</h3>
-    <p class="text-muted mb-0">
-        Monitor product availability and stock levels.
-    </p>
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    <div>
+        <h3 class="mb-1">Inventory Management</h3>
+        <p class="text-muted mb-0">
+            Monitor product availability and stock levels.
+        </p>
+    </div>
+
+    <div class="d-flex gap-2">
+
+        <a href="{% url 'stock_adjustment' %}"
+           class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i>
+            Adjust Stock
+        </a>
+
+        <a href="{% url 'stock_history' %}"
+           class="btn btn-outline-secondary">
+            <i class="bi bi-clock-history"></i>
+            Stock History
+        </a>
+
+    </div>
+
 </div>
 
 <!-- Stock Summary Cards -->
