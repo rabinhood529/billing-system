@@ -6,11 +6,12 @@ from django.db.models import Sum
 from django.db.models.functions import TruncDate
 from django.utils import timezone
 
-from billing.models import Invoice
+from billing.models import Invoice, InvoiceItem
 from products.models import Product
 from customers.models import Customer
+from django.contrib.auth.decorators import login_required
 
-
+@login_required
 def dashboard(request):
 
     # Only completed invoices count
@@ -32,6 +33,18 @@ def dashboard(request):
     recent_sales = completed_invoices.order_by(
         '-created_at'
     )[:5]
+
+    # Get the top five selling products
+    top_products = (
+        InvoiceItem.objects
+        .filter(invoice__status='completed')
+        .values('product_name')
+        .annotate(
+            total_quantity=Sum('quantity'),
+            total_revenue=Sum('line_total')
+        )
+        .order_by('-total_quantity')[:5]
+    )
 
     # Prepare daily sales data for the last 7 days
     today = timezone.localdate()
@@ -74,6 +87,7 @@ def dashboard(request):
         'recent_sales': recent_sales,
         'sales_chart_labels': sales_chart_labels,
         'sales_chart_values': sales_chart_values,
+        'top_products': top_products,
     }
 
     return render(

@@ -4,6 +4,7 @@ from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from .models import Customer
 import re
+from django.contrib.auth.decorators import login_required
 
 
 def validate_customer_data(request, customer=None):
@@ -90,7 +91,7 @@ def validate_customer_data(request, customer=None):
 
     return form_data, errors, values
 
-
+@login_required
 def customer_list(request):
 
     search_query = request.GET.get('search', '')
@@ -117,7 +118,7 @@ def customer_list(request):
         context
     )
 
-
+@login_required
 def customer_create(request):
 
     form_data = {}
@@ -142,7 +143,7 @@ def customer_create(request):
         }
     )
 
-
+@login_required
 def customer_edit(request, customer_id):
 
     customer = get_object_or_404(Customer, id=customer_id)
@@ -184,7 +185,7 @@ def customer_edit(request, customer_id):
         }
     )
 
-
+@login_required
 def customer_delete(request, customer_id):
 
     customer = get_object_or_404(Customer, id=customer_id)

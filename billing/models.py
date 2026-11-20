@@ -49,6 +49,14 @@ class Invoice(models.Model):
         default='Walk-in Customer'
     )
 
+    created_by = models.ForeignKey(
+    'auth.User',
+    on_delete=models.SET_NULL,
+    null=True,
+    blank=True,
+    related_name='created_invoices'
+)
+
     subtotal = models.DecimalField(
         max_digits=12,
         decimal_places=2,

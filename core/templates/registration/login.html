@@ -1,0 +1,70 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Billing System</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div class="container min-vh-100 d-flex justify-content-center align-items-center">
+
+    <div class="card shadow-sm border-0 p-4" style="width: 100%; max-width: 420px;">
+
+        <div class="text-center mb-4">
+            <h3 class="fw-bold">Billing System</h3>
+            <p class="text-muted">Sign in to access your account</p>
+        </div>
+
+        {% if form.errors %}
+            <div class="alert alert-danger">
+                Invalid username or password.
+            </div>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label class="form-label">Username</label>
+                <input
+                    type="text"
+                    name="username"
+                    class="form-control"
+                    placeholder="Enter your username"
+                    required
+                    autofocus
+                >
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                <input
+                    type="password"
+                    name="password"
+                    class="form-control"
+                    placeholder="Enter your password"
+                    required
+                >
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">
+                Login
+            </button>
+
+            <input type="hidden" name="next" value="{{ next }}">
+        </form>
+
+        <p class="text-center text-muted small mt-4 mb-0">
+            Authorized shop staff only.
+        </p>
+
+    </div>
+</div>
+
+</body>
+</html>

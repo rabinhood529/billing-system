@@ -15,8 +15,10 @@ from products.models import Product, StockMovement
 from customers.models import Customer
 from .models import Invoice, InvoiceItem
 from django.utils import timezone 
+from django.contrib.auth.decorators import login_required
+from core.decorators import admin_required
 
-
+@login_required
 def pos(request):
 
     products = Product.objects.filter(
@@ -78,7 +80,7 @@ def pos(request):
 
     return render(request, 'billing/pos.html', context)
 
-
+@login_required
 def add_to_cart(request, product_id):
 
     if request.method == 'POST':
@@ -120,7 +122,7 @@ def add_to_cart(request, product_id):
 
     return redirect('pos')
 
-
+@login_required
 def remove_from_cart(request, product_id):
 
     if request.method == 'POST':
@@ -135,7 +137,7 @@ def remove_from_cart(request, product_id):
 
     return redirect('pos')
 
-
+@login_required
 def update_cart(request, product_id):
 
     if request.method == 'POST':
@@ -171,7 +173,7 @@ def update_cart(request, product_id):
 
     return redirect('pos')
 
-
+@login_required
 def update_discount(request):
 
     if request.method == 'POST':
@@ -220,7 +222,7 @@ def update_discount(request):
 
     return redirect('pos')
 
-
+@login_required
 def update_customer(request):
 
     if request.method == 'POST':
@@ -249,7 +251,7 @@ def update_customer(request):
     return redirect('pos')
 
 
-
+@login_required
 def checkout(request):
 
     cart = request.session.get('cart', {})
@@ -374,16 +376,17 @@ def checkout(request):
 
                 # Create invoice.
                 invoice = Invoice.objects.create(
-                    customer=customer,
-                    customer_name=(
-                        customer.name if customer else 'Walk-in Customer'
-                    ),
-                    subtotal=subtotal,
-                    discount=discount,
-                    total=grand_total,
-                    payment_method=payment_method,
-                    payment_status=payment_status,
-                    amount_paid=amount_paid,
+                customer=customer,
+                created_by=request.user,
+                customer_name=(
+                    customer.name if customer else 'Walk-in Customer'
+                ),
+                subtotal=subtotal,
+                discount=discount,
+                total=grand_total,
+                payment_method=payment_method,
+                payment_status=payment_status,
+                amount_paid=amount_paid,
                 )
 
                 # Create invoice items, reduce stock and record movement.
@@ -455,7 +458,7 @@ def checkout(request):
     return render(request, 'billing/checkout.html', context)
 
 
-
+@login_required
 def invoice_detail(request, invoice_id):
 
     invoice = get_object_or_404(
@@ -475,7 +478,7 @@ def invoice_detail(request, invoice_id):
     )
 
 
-
+@login_required
 def invoice_list(request):
 
     invoices = Invoice.objects.all()
@@ -507,7 +510,7 @@ def invoice_list(request):
     return render(request, 'billing/invoice_list.html', context)
 
 
-
+@admin_required
 def sales_report(request):
 
     today = timezone.localdate()

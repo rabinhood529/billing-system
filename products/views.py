@@ -4,6 +4,8 @@ from .models import Product, StockMovement
 from decimal import Decimal, InvalidOperation
 from django.contrib import messages
 from django.db import transaction
+from django.contrib.auth.decorators import login_required
+from core.decorators import admin_required
 
 def validate_product_data(request, product=None):
 
@@ -117,7 +119,7 @@ def validate_product_data(request, product=None):
 
     return form_data, errors, values
 
-
+@admin_required
 def product_list(request):
 
     search_query = request.GET.get('search', '')
@@ -151,7 +153,7 @@ def product_list(request):
 
     return render(request, 'products/product_list.html', context)
 
-
+@admin_required
 def product_create(request):
 
     form_data = {}
@@ -176,7 +178,7 @@ def product_create(request):
         }
     )
 
-
+@admin_required
 def product_edit(request, product_id):
 
     product = get_object_or_404(Product, id=product_id)
@@ -221,7 +223,7 @@ def product_edit(request, product_id):
         }
     )
 
-
+@admin_required
 def product_delete(request, product_id):
 
     product = get_object_or_404(Product, id=product_id)
@@ -239,7 +241,7 @@ def product_delete(request, product_id):
             'product': product
         }
     )
-
+@admin_required
 def inventory_list(request):
 
     products = Product.objects.all()
@@ -306,6 +308,7 @@ def inventory_list(request):
 
     return render(request, 'products/inventory_list.html', context)
 
+@admin_required
 def stock_adjustment(request):
 
     products = Product.objects.all().order_by('name')
@@ -429,7 +432,7 @@ def stock_adjustment(request):
         }
     )
 
-
+@admin_required
 def stock_history(request):
 
     movements = StockMovement.objects.select_related(

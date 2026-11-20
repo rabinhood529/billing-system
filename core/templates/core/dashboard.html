@@ -54,36 +54,62 @@ Dashboard | Billing System
 
 </div>
 
-<!-- Recent Sales -->
-
-
 <!-- Daily Sales Trend Chart -->
 <div class="card shadow-sm border-0 mt-4">
-
     <div class="card-body">
-
         <h5 class="mb-3">Daily Sales Trend</h5>
 
         <div style="height: 300px;">
             <canvas id="salesChart"></canvas>
         </div>
-
     </div>
-
 </div>
 
+<!-- Top-Selling Products -->
 <div class="card shadow-sm border-0 mt-4">
-
     <div class="card-body">
+        <h5 class="mb-3">Top-Selling Products</h5>
 
+        {% if top_products %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Product Name</th>
+                        <th>Quantity Sold</th>
+                        <th>Total Revenue</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for product in top_products %}
+                    <tr>
+                        <td>{{ product.product_name }}</td>
+                        <td>{{ product.total_quantity }}</td>
+                        <td>
+                            Rs. {{ product.total_revenue|floatformat:2 }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted mb-0">
+            No product sales available yet.
+        </p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Recent Sales -->
+<div class="card shadow-sm border-0 mt-4">
+    <div class="card-body">
         <h5 class="mb-3">Recent Sales</h5>
 
         {% if recent_sales %}
-
         <div class="table-responsive">
-
             <table class="table table-hover align-middle mb-0">
-
                 <thead class="table-light">
                     <tr>
                         <th>Invoice Number</th>
@@ -95,56 +121,42 @@ Dashboard | Billing System
                 </thead>
 
                 <tbody>
-
                     {% for invoice in recent_sales %}
-
                     <tr>
                         <td>{{ invoice.invoice_number }}</td>
-
                         <td>{{ invoice.customer_name }}</td>
-
                         <td>{{ invoice.created_at|date:"d M Y, h:i A" }}</td>
-
                         <td>Rs. {{ invoice.total|floatformat:2 }}</td>
-
                         <td>
                             {% if invoice.payment_status == 'paid' %}
                                 <span class="badge bg-success">Paid</span>
-
                             {% elif invoice.payment_status == 'partial' %}
                                 <span class="badge bg-warning text-dark">Partially Paid</span>
-
                             {% else %}
                                 <span class="badge bg-danger">Unpaid</span>
                             {% endif %}
                         </td>
                     </tr>
-
                     {% endfor %}
-
                 </tbody>
-
             </table>
-
         </div>
-
         {% else %}
-
         <p class="text-muted mb-0">
             No sales records available yet.
         </p>
-
         {% endif %}
-
     </div>
-
 </div>
 
+<!-- Chart Data -->
 {{ sales_chart_labels|json_script:"sales-chart-labels" }}
 {{ sales_chart_values|json_script:"sales-chart-values" }}
 
+<!-- Chart.js Script -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+<!-- Initialize Sales Chart -->
 <script>
     const labels = JSON.parse(
         document.getElementById('sales-chart-labels').textContent
@@ -194,6 +206,5 @@ Dashboard | Billing System
         }
     });
 </script>
-
 
 {% endblock %}
